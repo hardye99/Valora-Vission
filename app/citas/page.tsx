@@ -2,14 +2,13 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
-import { Calendar, Clock, MapPin, Phone, CheckCircle, User } from "lucide-react";
+import { Clock, MapPin, Phone, CheckCircle, User, CalendarX } from "lucide-react";
 
 export default function BookingPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const supabase = createClient();
 
-  // DATOS DEL FORMULARIO
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -18,12 +17,28 @@ export default function BookingPage() {
     reason: "Examen de la Vista"
   });
 
-  // GENERAR HORARIOS (9:30 AM a 3:30 PM)
   const timeSlots = [
     "09:30", "10:00", "10:30", "11:00", "11:30", 
     "12:00", "12:30", "13:00", "13:30", 
-    "14:00", "14:30", "15:00", "15:30"
+    "14:00", "14:30", "15:00"
   ];
+
+  // FUNCIÓN PARA BLOQUEAR JUEVES
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedDate = e.target.value;
+    if (!selectedDate) return;
+
+    // Obtenemos el día de la semana (UTC para evitar problemas de zona horaria)
+    // 0=Domingo, 1=Lunes, ... 4=Jueves
+    const dayOfWeek = new Date(selectedDate).getUTCDay();
+
+    if (dayOfWeek === 4) { // Si es JUEVES (4)
+      alert("⚠️ Lo sentimos, los Jueves permanecemos cerrados. Por favor selecciona otro día.");
+      setFormData({ ...formData, date: "" }); // Borramos la fecha seleccionada
+    } else {
+      setFormData({ ...formData, date: selectedDate }); // Si no es jueves, permitimos
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +48,6 @@ export default function BookingPage() {
     }
     setLoading(true);
 
-    // Combinar fecha y hora en formato ISO
     const dateTime = new Date(`${formData.date}T${formData.time}:00`);
 
     const { error } = await supabase.from("appointments").insert([
@@ -65,9 +79,8 @@ export default function BookingPage() {
 
         <div className="grid md:grid-cols-2 gap-8">
           
-          {/* COLUMNA IZQUIERDA: INFORMACIÓN Y UBICACIÓN */}
+          {/* COLUMNA IZQUIERDA: INFO */}
           <div className="space-y-6">
-            {/* Tarjeta de Ubicación */}
             <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-valora-green">
               <h3 className="font-bold text-xl text-valora-navy flex items-center gap-2 mb-4">
                 <MapPin className="text-valora-green" /> Ubicación
@@ -77,18 +90,23 @@ export default function BookingPage() {
               <div className="mt-3 bg-blue-50 text-valora-navy px-4 py-2 rounded-lg inline-block font-bold border border-blue-100">
                 Manzana 17, Local 11 y 12
               </div>
-              <p className="text-xs text-gray-400 mt-4">
-                *Referencia: Dentro del mercado, pasillo principal.
-              </p>
             </div>
 
-            {/* Tarjeta de Horario */}
+            {/* AVISO DE HORARIO (Actualizado) */}
             <div className="bg-valora-navy text-white p-6 rounded-2xl shadow-md">
               <h3 className="font-bold text-lg flex items-center gap-2 mb-2">
                 <Clock className="text-valora-green" /> Horario de Atención
               </h3>
-              <p className="text-gray-300">Lunes a Sábado</p>
-              <p className="text-2xl font-bold text-valora-green">9:30 AM - 3:30 PM</p>
+              <div className="space-y-2 mt-4">
+                 <div className="flex justify-between border-b border-white/20 pb-2">
+                    <span>Lunes a Domingo</span>
+                    <span className="font-bold text-valora-green">9:30 - 3:30</span>
+                 </div>
+                 <div className="flex justify-between pt-1 text-red-300 font-bold">
+                    <span className="flex items-center gap-2"><CalendarX size={16}/> Jueves </span>
+                    <span>Cerrado</span>
+                 </div>
+              </div>
             </div>
           </div>
 
@@ -136,10 +154,12 @@ export default function BookingPage() {
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1">Fecha</label>
                     <input required type="date"
-                      min={new Date().toISOString().split("T")[0]} // No permite fechas pasadas
+                      min={new Date().toISOString().split("T")[0]}
                       className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-valora-green outline-none"
-                      value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
+                      value={formData.date} 
+                      onChange={handleDateChange}
                     />
+                    <p className="text-xs text-gray-400 mt-1">Excepto Jueves y Domingos</p>
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1">Hora</label>

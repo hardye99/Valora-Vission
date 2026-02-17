@@ -3,8 +3,8 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Image from "next/image"; 
-import Link from "next/link"; // <--- Importante
-import { Lock, Mail, ArrowLeft } from "lucide-react"; // <--- Agregamos ArrowLeft
+import Link from "next/link"; 
+import { Lock, Mail, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

@@ -19,9 +19,9 @@ export default function Home() {
               Salud Visual Integral
             </span>
             <h1 className="text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight">
-              Ve el mundo como <br/>
+              Conoce el valor <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#92C02E] to-[#F39200]">
-                realmente es
+                de tu visión
               </span>
             </h1>
             <p className="text-xl text-gray-200 max-w-lg leading-relaxed font-light">
@@ -72,7 +72,7 @@ export default function Home() {
         
         <div className="grid md:grid-cols-3 gap-8">
           {[
-            { icon: ShieldCheck, title: "Examen Computarizado", text: "Diagnóstico preciso con tecnología digital de última generación para detectar cualquier anomalía." },
+            { icon: ShieldCheck, title: "Examen GRATIS", text: "Sabemos la importancia de tener salud visual." },
             { icon: Clock, title: "Entrega Express", text: "Entendemos tu prisa. Contamos con laboratorio propio para entregar tus lentes en tiempo récord." },
             { icon: MapPin, title: "Atención Personalizada", text: "Asesores expertos dedicados a encontrar el armazón perfecto para tu tipo de rostro y estilo de vida." },
           ].map((item, i) => (
@@ -96,7 +96,7 @@ export default function Home() {
                 Valora Vissión
              </h3>
              <p className="text-gray-400 text-sm leading-relaxed">
-               Comprometidos con tu salud visual. Ofrecemos exámenes de la vista, lentes de contacto y una amplia variedad de armazones.
+               Comprometidos con tu salud visual. Ofrecemos exámenes de la vista gratis, lentes de contacto y una amplia variedad de armazones.
              </p>
           </div>
 
@@ -111,9 +111,9 @@ export default function Home() {
 
           <div>
              <h3 className="text-lg font-bold text-[#92C02E] mb-4">Horario</h3>
-             <p className="text-gray-300 text-sm mb-2">Lunes a Sábado</p>
+             <p className="text-gray-300 text-sm mb-2">Lunes a Domingo</p>
              <p className="text-white font-bold text-2xl">9:30 AM - 3:30 PM</p>
-             <p className="text-xs text-gray-500 mt-2">Domingo Cerrado</p>
+             <p className="text-xs text-gray-500 mt-2">Jueves Cerrado</p>
           </div>
 
         </div>

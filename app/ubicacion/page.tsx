@@ -15,7 +15,7 @@ export default function LocationPage() {
           Visítanos en Guadalajara
         </h1>
         <p className="text-center text-gray-500 mb-12 max-w-2xl mx-auto">
-          Estamos ubicados dentro del Mercado del Campesino, listos para atenderte con la mejor tecnología.
+          Estamos ubicados dentro del Mercado del Campesino, listos para atenderte con lo mejor.
         </p>
 
         <div className="grid lg:grid-cols-2 gap-8 items-start">
@@ -32,7 +32,7 @@ export default function LocationPage() {
                 <div>
                   <h3 className="text-xl font-bold text-valora-navy mb-1">Dirección Exacta</h3>
                   <p className="text-lg font-medium text-gray-800">Mercado del Campesino</p>
-                  <p className="text-gray-600 mb-3">Calle Cantarranas, Guadalajara, Jal.</p>
+                  <p className="text-gray-600 mb-3">Calle Gigantes, Guadalajara, Jal.</p>
                   <div className="inline-block bg-valora-navy text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md">
                     Manzana 17, Local 11 y 12
                   </div>
@@ -55,11 +55,11 @@ export default function LocationPage() {
                   <h3 className="text-xl font-bold mb-1">Horario de Atención</h3>
                   <div className="mt-4 space-y-2">
                     <div className="flex justify-between w-full border-b border-white/10 pb-2">
-                      <span className="text-gray-300">Lunes a Sábado</span>
+                      <span className="text-gray-300">Lunes a Domingo</span>
                       <span className="font-bold text-valora-green">9:30 AM - 3:30 PM</span>
                     </div>
                     <div className="flex justify-between w-full pt-2">
-                      <span className="text-gray-300">Domingo</span>
+                      <span className="text-gray-300">Jueves</span>
                       <span className="font-bold text-red-300">Cerrado</span>
                     </div>
                   </div>
