@@ -34,7 +34,7 @@ export default function Dashboard() {
   }, []);
 
   const fetchData = async () => {
-    // Citas: Ordenadas por fecha (las más nuevas al final o principio según preferencia)
+    // Citas: Ordenadas por fecha
     const { data: citas } = await supabase.from("appointments").select("*").order("date_time", { ascending: true });
     if (citas) setAppointments(citas);
 
@@ -51,14 +51,30 @@ export default function Dashboard() {
 
   // --- LÓGICA DE CITAS ---
 
-  // 1. Cambiar Estatus (Completada / Cancelada)
+  // 1. Validar Fecha (Bloquear Jueves)
+  const handleManualDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedDate = e.target.value;
+    if (!selectedDate) return;
+
+    // 0=Domingo, 1=Lunes, ... 4=Jueves
+    const dayOfWeek = new Date(selectedDate).getUTCDay();
+
+    if (dayOfWeek === 4) { // Si es JUEVES (4)
+      alert("⚠️ Los Jueves permanecemos cerrados. Por favor selecciona otro día.");
+      setNewAppt({ ...newAppt, date: "" }); // Borramos la fecha seleccionada
+    } else {
+      setNewAppt({ ...newAppt, date: selectedDate });
+    }
+  };
+
+  // 2. Cambiar Estatus (Completada / Cancelada)
   const updateStatus = async (id: number, newStatus: string) => {
     const { error } = await supabase.from("appointments").update({ status: newStatus }).eq("id", id);
     if (error) alert("Error al actualizar");
     else fetchData(); // Recargar lista
   };
 
-  // 2. Crear Cita Manual
+  // 3. Crear Cita Manual
   const handleCreateAppt = async (e: React.FormEvent) => {
     e.preventDefault();
     if(!newAppt.date || !newAppt.time) return alert("Selecciona fecha y hora");
@@ -113,21 +129,37 @@ export default function Dashboard() {
                 {/* FORMULARIO MODAL PARA NUEVA CITA */}
                 {showApptForm && (
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
+                        <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md animate-fade-in-up">
                             <h3 className="text-xl font-bold text-valora-navy mb-4">Nueva Cita Manual</h3>
                             <form onSubmit={handleCreateAppt} className="space-y-4">
-                                <input required placeholder="Nombre del Cliente" className="w-full p-2 border rounded" value={newAppt.client_name} onChange={e => setNewAppt({...newAppt, client_name: e.target.value})} />
-                                <input required placeholder="Teléfono" className="w-full p-2 border rounded" value={newAppt.client_phone} onChange={e => setNewAppt({...newAppt, client_phone: e.target.value})} />
-                                <div className="grid grid-cols-2 gap-2">
-                                    <input required type="date" className="p-2 border rounded" value={newAppt.date} onChange={e => setNewAppt({...newAppt, date: e.target.value})} />
-                                    <select required className="p-2 border rounded" value={newAppt.time} onChange={e => setNewAppt({...newAppt, time: e.target.value})}>
-                                        <option value="">Hora...</option>
-                                        {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
-                                    </select>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Paciente</label>
+                                    <input required placeholder="Nombre Completo" className="w-full p-2 border rounded focus:border-valora-green outline-none" value={newAppt.client_name} onChange={e => setNewAppt({...newAppt, client_name: e.target.value})} />
                                 </div>
-                                <div className="flex gap-2 justify-end mt-4">
-                                    <button type="button" onClick={() => setShowApptForm(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancelar</button>
-                                    <button type="submit" className="px-4 py-2 bg-valora-navy text-white rounded font-bold hover:bg-valora-green">Agendar</button>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Teléfono</label>
+                                    <input required placeholder="Ej: 33 1234 5678" className="w-full p-2 border rounded focus:border-valora-green outline-none" value={newAppt.client_phone} onChange={e => setNewAppt({...newAppt, client_phone: e.target.value})} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1">Fecha</label>
+                                        <input required type="date" className="w-full p-2 border rounded focus:border-valora-green outline-none" 
+                                            value={newAppt.date} 
+                                            onChange={handleManualDateChange} // <--- AQUÍ ESTÁ EL BLOQUEO
+                                        />
+                                        <p className="text-[10px] text-red-400 mt-1">* Excepto Jueves</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1">Hora</label>
+                                        <select required className="w-full p-2 border rounded focus:border-valora-green outline-none bg-white" value={newAppt.time} onChange={e => setNewAppt({...newAppt, time: e.target.value})}>
+                                            <option value="">Seleccionar...</option>
+                                            {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 justify-end mt-4 pt-4 border-t border-gray-100">
+                                    <button type="button" onClick={() => setShowApptForm(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded font-medium text-sm">Cancelar</button>
+                                    <button type="submit" className="px-4 py-2 bg-valora-navy text-white rounded font-bold hover:bg-valora-green transition text-sm">Confirmar Agendar</button>
                                 </div>
                             </form>
                         </div>
@@ -137,7 +169,6 @@ export default function Dashboard() {
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {appointments.length === 0 ? <p className="col-span-full bg-white p-8 rounded-xl text-center text-gray-400 border border-dashed border-gray-300">No hay citas pendientes.</p> : 
                         appointments.map((appt) => {
-                            // Definir estilos según status
                             let statusColor = "bg-yellow-100 text-yellow-700 border-yellow-200";
                             let opacity = "opacity-100";
                             if (appt.status === "completada") { statusColor = "bg-green-100 text-green-700 border-green-200"; }
@@ -145,7 +176,6 @@ export default function Dashboard() {
 
                             return (
                                 <div key={appt.id} className={`bg-white p-5 rounded-xl shadow-sm border hover:shadow-md transition relative group ${opacity} ${appt.status === 'cancelada' ? 'border-gray-200' : 'border-gray-100'}`}>
-                                    {/* Indicador lateral de color */}
                                     <div className={`absolute top-0 left-0 w-1.5 h-full rounded-l-xl ${appt.status === 'completada' ? 'bg-green-500' : appt.status === 'cancelada' ? 'bg-gray-400' : 'bg-yellow-400'}`}></div>
                                     
                                     <div className="flex justify-between items-start mb-3 pl-2">
@@ -163,7 +193,6 @@ export default function Dashboard() {
                                         <p className="flex items-center gap-2"><Phone size={14} className="text-valora-navy"/> {appt.client_phone}</p>
                                     </div>
 
-                                    {/* BOTONES DE ACCIÓN (Solo si está pendiente) */}
                                     {appt.status === "pendiente" && (
                                         <div className="flex gap-2 pt-3 border-t border-gray-100 pl-2">
                                             <button onClick={() => updateStatus(appt.id, "completada")} className="flex-1 bg-green-50 text-green-700 py-1.5 rounded-lg text-xs font-bold hover:bg-green-100 flex justify-center items-center gap-1 transition">
