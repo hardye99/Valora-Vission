@@ -8,7 +8,7 @@ import ExamForm from "@/components/ExamForm";
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("citas"); 
   const [showExamForm, setShowExamForm] = useState(false);
-  const [showApptForm, setShowApptForm] = useState(false); // Modal para nueva cita
+  const [showApptForm, setShowApptForm] = useState(false);
   const [selectedExam, setSelectedExam] = useState<any>(null);
   
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -16,7 +16,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Estado para formulario de nueva cita manual
   const [newAppt, setNewAppt] = useState({
     client_name: "", client_phone: "", date: "", time: "", reason: "Examen de la Vista"
   });
@@ -34,7 +33,6 @@ export default function Dashboard() {
   }, []);
 
   const fetchData = async () => {
-    // Citas: Ordenadas por fecha
     const { data: citas } = await supabase.from("appointments").select("*").order("date_time", { ascending: true });
     if (citas) setAppointments(citas);
 
@@ -49,35 +47,49 @@ export default function Dashboard() {
     router.push("/login");
   };
 
-  // --- LÓGICA DE CITAS ---
+  // --- VALIDACIONES DE CITA MANUAL ---
 
-  // 1. Validar Fecha (Bloquear Jueves)
+  // 1. Validar Teléfono (Solo números y máximo 10)
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Reemplaza cualquier cosa que no sea un número por nada (lo borra)
+    const soloNumeros = e.target.value.replace(/\D/g, '');
+    
+    // Solo actualiza si tiene 10 caracteres o menos
+    if (soloNumeros.length <= 10) {
+      setNewAppt({ ...newAppt, client_phone: soloNumeros });
+    }
+  };
+
+  // 2. Validar Fecha (Bloquear Jueves)
   const handleManualDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDate = e.target.value;
     if (!selectedDate) return;
 
-    // 0=Domingo, 1=Lunes, ... 4=Jueves
     const dayOfWeek = new Date(selectedDate).getUTCDay();
 
-    if (dayOfWeek === 4) { // Si es JUEVES (4)
+    if (dayOfWeek === 4) { 
       alert("⚠️ Los Jueves permanecemos cerrados. Por favor selecciona otro día.");
-      setNewAppt({ ...newAppt, date: "" }); // Borramos la fecha seleccionada
+      setNewAppt({ ...newAppt, date: "" }); 
     } else {
       setNewAppt({ ...newAppt, date: selectedDate });
     }
   };
 
-  // 2. Cambiar Estatus (Completada / Cancelada)
   const updateStatus = async (id: number, newStatus: string) => {
     const { error } = await supabase.from("appointments").update({ status: newStatus }).eq("id", id);
     if (error) alert("Error al actualizar");
-    else fetchData(); // Recargar lista
+    else fetchData();
   };
 
-  // 3. Crear Cita Manual
+  // 3. Crear Cita Manual (con validación de longitud)
   const handleCreateAppt = async (e: React.FormEvent) => {
     e.preventDefault();
     if(!newAppt.date || !newAppt.time) return alert("Selecciona fecha y hora");
+    
+    // Verificación final del teléfono antes de guardar
+    if(newAppt.client_phone.length !== 10) {
+        return alert("❌ El número de celular debe tener exactamente 10 dígitos.");
+    }
     
     const dateTime = new Date(`${newAppt.date}T${newAppt.time}:00`);
     
@@ -99,7 +111,7 @@ export default function Dashboard() {
   };
 
   const filteredPrescriptions = prescriptions.filter(p => p.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()));
-  const timeSlots = ["09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00"];
+  const timeSlots = ["09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30"];
 
   if (loading) return <div className="h-screen flex items-center justify-center bg-gray-50 text-valora-navy font-bold animate-pulse">Cargando sistema...</div>;
 
@@ -116,7 +128,6 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto p-4 md:p-8">
         
-        {/* --- PESTAÑA DE CITAS --- */}
         {activeTab === "citas" && (
             <div className="space-y-6 animate-fade-in-up">
                 <header className="flex justify-between items-center border-b pb-4 bg-white p-4 rounded-xl shadow-sm">
@@ -126,7 +137,6 @@ export default function Dashboard() {
                     </button>
                 </header>
 
-                {/* FORMULARIO MODAL PARA NUEVA CITA */}
                 {showApptForm && (
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                         <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md animate-fade-in-up">
@@ -136,16 +146,29 @@ export default function Dashboard() {
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Paciente</label>
                                     <input required placeholder="Nombre Completo" className="w-full p-2 border rounded focus:border-valora-green outline-none" value={newAppt.client_name} onChange={e => setNewAppt({...newAppt, client_name: e.target.value})} />
                                 </div>
+                                
+                                {/* CAMPO DE TELÉFONO CON VALIDACIÓN */}
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Teléfono</label>
-                                    <input required placeholder="Ej: 33 1234 5678" className="w-full p-2 border rounded focus:border-valora-green outline-none" value={newAppt.client_phone} onChange={e => setNewAppt({...newAppt, client_phone: e.target.value})} />
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Celular (10 dígitos)</label>
+                                    <input 
+                                        required 
+                                        type="tel"
+                                        placeholder="Ej: 3312345678" 
+                                        className="w-full p-2 border rounded focus:border-valora-green outline-none font-mono" 
+                                        value={newAppt.client_phone} 
+                                        onChange={handlePhoneChange} 
+                                    />
+                                    {newAppt.client_phone.length > 0 && newAppt.client_phone.length < 10 && (
+                                        <p className="text-[10px] text-red-500 mt-1">Celular no válido</p>
+                                    )}
                                 </div>
+
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 mb-1">Fecha</label>
                                         <input required type="date" className="w-full p-2 border rounded focus:border-valora-green outline-none" 
                                             value={newAppt.date} 
-                                            onChange={handleManualDateChange} // <--- AQUÍ ESTÁ EL BLOQUEO
+                                            onChange={handleManualDateChange} 
                                         />
                                         <p className="text-[10px] text-red-400 mt-1">* Excepto Jueves</p>
                                     </div>

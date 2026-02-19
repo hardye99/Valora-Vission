@@ -23,6 +23,13 @@ export default function BookingPage() {
     "14:00", "14:30", "15:00"
   ];
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const soloNumeros = e.target.value.replace(/\D/g, '');
+    if (soloNumeros.length <= 10){
+      setFormData({ ...formData, phone: soloNumeros });
+    } 
+  };
+
   // FUNCIÓN PARA BLOQUEAR JUEVES
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDate = e.target.value;
@@ -46,6 +53,12 @@ export default function BookingPage() {
       alert("Por favor selecciona fecha y hora");
       return;
     }
+
+    if (formData.phone.length !== 10) {
+      alert("❌ El número de celular debe tener exactamente 10 dígitos.");
+      return;
+    }
+
     setLoading(true);
 
     const dateTime = new Date(`${formData.date}T${formData.time}:00`);
@@ -143,11 +156,18 @@ export default function BookingPage() {
                   <label className="block text-sm font-bold text-gray-700 mb-1">Teléfono</label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 text-gray-400" size={18} />
-                    <input required type="tel" placeholder="Ej. 33 1234 5678"
-                      className="w-full pl-10 p-3 border rounded-xl focus:ring-2 focus:ring-valora-green outline-none"
-                      value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
+                    <input
+                      required 
+                        type="tel" 
+                        placeholder="Ej. 33 1234 5678"
+                        className="w-full pl-10 p-3 border rounded-xl focus:ring-2 focus:ring-valora-green outline-none"
+                        value={formData.phone} 
+                        onChange={handlePhoneChange}
                     />
                   </div>
+                  {formData.phone.length > 0 && formData.phone.length < 10 && (
+                      <p className="text-xs text-red-500 mt-1">Celular no válido</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -159,7 +179,7 @@ export default function BookingPage() {
                       value={formData.date} 
                       onChange={handleDateChange}
                     />
-                    <p className="text-xs text-gray-400 mt-1">Excepto Jueves y Domingos</p>
+                    <p className="text-xs text-gray-400 mt-1">Excepto Jueves</p>
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1">Hora</label>
