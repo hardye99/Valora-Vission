@@ -18,8 +18,8 @@ interface ExamData {
 
   av_od: string; av_oi: string; dip: string; ao_height: string;
 
-  prev_sph_od: string; prev_cyl_od: string; prev_axis_od: string; prev_add_od: string;
-  prev_sph_oi: string; prev_cyl_oi: string; prev_axis_oi: string; prev_add_oi: string;
+  prev_sph_od: string; prev_cyl_od: string; prev_axis_od: string; prev_add_power: string;
+  prev_sph_oi: string; prev_cyl_oi: string; prev_axis_oi: string; 
 
   sph_od: string; cyl_od: string; axis_od: string; add_power: string;
   sph_oi: string; cyl_oi: string; axis_oi: string;
@@ -52,8 +52,8 @@ export default function ExamForm({ onSuccess, onCancel, initialData }: ExamFormP
 
     av_od: "", av_oi: "", dip: "", ao_height: "",
 
-    prev_sph_od: "", prev_cyl_od: "", prev_axis_od: "", prev_add_od: "",
-    prev_sph_oi: "", prev_cyl_oi: "", prev_axis_oi: "", prev_add_oi: "",
+    prev_sph_od: "", prev_cyl_od: "", prev_axis_od: "", prev_add_power: "",
+    prev_sph_oi: "", prev_cyl_oi: "", prev_axis_oi: "", 
 
     sph_od: "", cyl_od: "", axis_od: "", add_power: "",
     sph_oi: "", cyl_oi: "", axis_oi: "", 
@@ -104,6 +104,26 @@ export default function ExamForm({ onSuccess, onCancel, initialData }: ExamFormP
     }
   };
 
+  const handleAddBlur = (e: React.FocusEvent<HTMLInputElement>, field: keyof ExamData) => {
+      if (!isEditing) return;
+      let val = parseFloat(e.target.value);
+      
+      // Si está vacío o no es número, limpiamos
+      if (isNaN(val)) {
+        setFormData(prev => ({ ...prev, [field]: "" }));
+        return;
+      }
+
+      // 1. Limitar el rango (No menos de 0, no más de 3)
+      if (val < 0) val = 0;
+      if (val > 3) val = 3;
+
+      // 2. Redondear a 0.25 y formatear con el '+'
+      const rounded = (Math.round(val * 4) / 4).toFixed(2);
+      
+      setFormData(prev => ({ ...prev, [field]: rounded }));
+    };
+
   const handleDiopterChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof ExamData) => {
     if(!isEditing) return;
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
@@ -114,8 +134,7 @@ export default function ExamForm({ onSuccess, onCancel, initialData }: ExamFormP
     const val = parseFloat(e.target.value);
     if (!isNaN(val)) {
         const rounded = (Math.round(val * 4) / 4).toFixed(2);
-        const finalVal = (field.includes('add') && parseFloat(rounded) > 0 && !rounded.startsWith('+')) ? `+${rounded}` : rounded;
-        setFormData(prev => ({ ...prev, [field]: finalVal }));
+        setFormData(prev => ({ ...prev, [field]: rounded }));
     }
   };
 
@@ -201,6 +220,11 @@ export default function ExamForm({ onSuccess, onCancel, initialData }: ExamFormP
     <input disabled={!isEditing} type="number" step="0.25" className="w-full text-center p-1 font-bold outline-none bg-transparent" placeholder={placeholder} 
     value={value || ""} 
     onChange={(e) => handleDiopterChange(e, field)} onBlur={(e) => handleDiopterBlur(e, field)} />
+  );
+  const AddInput = ({ value, field, placeholder }: any) => (
+    <input disabled={!isEditing} type="number" step="0.25" min="0" max="3.00" className="w-full text-center p-1 font-bold outline-none bg-transparent" placeholder={placeholder}
+    value = {value || ""}
+    onChange={(e) => handleDiopterChange(e, field)} onBlur={(e) => handleAddBlur(e, field)} />
   );
   const AxisInput = ({ value, field }: any) => (
     <input disabled={!isEditing} type="number" min="0" max="180" className="w-full text-center p-1 font-bold outline-none bg-transparent" placeholder="0-180" 
@@ -298,8 +322,8 @@ export default function ExamForm({ onSuccess, onCancel, initialData }: ExamFormP
                         <table className="w-full text-center text-sm">
                             <thead className="bg-blue-50 text-xs"><tr><th></th><th>ESF</th><th>CIL</th><th>EJE</th><th>ADD</th></tr></thead>
                             <tbody>
-                                <tr><td className="font-bold text-xs bg-blue-50">OD</td><td><DiopterInput value={formData.prev_sph_od} field="prev_sph_od" placeholder="0.00" /></td><td><DiopterInput value={formData.prev_cyl_od} field="prev_cyl_od" placeholder="0.00" /></td><td><AxisInput value={formData.prev_axis_od} field="prev_axis_od" /></td><td><DiopterInput value={formData.prev_add_od} field="prev_add_od" placeholder="+0.00" /></td></tr>
-                                <tr><td className="font-bold text-xs bg-blue-50">OI</td><td><DiopterInput value={formData.prev_sph_oi} field="prev_sph_oi" placeholder="0.00" /></td><td><DiopterInput value={formData.prev_cyl_oi} field="prev_cyl_oi" placeholder="0.00" /></td><td><AxisInput value={formData.prev_axis_oi} field="prev_axis_oi" /></td><td><DiopterInput value={formData.prev_add_oi} field="prev_add_oi" placeholder="+0.00" /></td></tr>
+                                <tr><td className="font-bold text-xs bg-blue-50">OD</td><td><DiopterInput value={formData.prev_sph_od} field="prev_sph_od" placeholder="0.00" /></td><td><DiopterInput value={formData.prev_cyl_od} field="prev_cyl_od" placeholder="0.00" /></td><td><AxisInput value={formData.prev_axis_od} field="prev_axis_od" /></td><td rowSpan={2} className="align-middle border-l"><AddInput value={formData.prev_add_power} field="prev_add_power" placeholder="+0.00" /></td></tr>
+                                <tr><td className="font-bold text-xs bg-blue-50">OI</td><td><DiopterInput value={formData.prev_sph_oi} field="prev_sph_oi" placeholder="0.00" /></td><td><DiopterInput value={formData.prev_cyl_oi} field="prev_cyl_oi" placeholder="0.00" /></td><td><AxisInput value={formData.prev_axis_oi} field="prev_axis_oi" /></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -309,7 +333,7 @@ export default function ExamForm({ onSuccess, onCancel, initialData }: ExamFormP
                         <table className="w-full text-center text-sm">
                             <thead className="bg-gray-100 text-xs"><tr><th></th><th>ESF</th><th>CIL</th><th>EJE</th><th>ADD</th></tr></thead>
                             <tbody>
-                                <tr><td className="font-bold text-xs bg-gray-50">OD</td><td><DiopterInput value={formData.sph_od} field="sph_od" placeholder="0.00" /></td><td><DiopterInput value={formData.cyl_od} field="cyl_od" placeholder="0.00" /></td><td><AxisInput value={formData.axis_od} field="axis_od" /></td><td rowSpan={2} className="align-middle border-l"><DiopterInput value={formData.add_power} field="add_power" placeholder="+0.00" /></td></tr>
+                                <tr><td className="font-bold text-xs bg-gray-50">OD</td><td><DiopterInput value={formData.sph_od} field="sph_od" placeholder="0.00" /></td><td><DiopterInput value={formData.cyl_od} field="cyl_od" placeholder="0.00" /></td><td><AxisInput value={formData.axis_od} field="axis_od" /></td><td rowSpan={2} className="align-middle border-l"><AddInput value={formData.add_power} field="add_power" placeholder="+0.00" /></td></tr>
                                 <tr><td className="font-bold text-xs bg-gray-50">OI</td><td><DiopterInput value={formData.sph_oi} field="sph_oi" placeholder="0.00" /></td><td><DiopterInput value={formData.cyl_oi} field="cyl_oi" placeholder="0.00" /></td><td><AxisInput value={formData.axis_oi} field="axis_oi" /></td></tr>
                             </tbody>
                         </table>
