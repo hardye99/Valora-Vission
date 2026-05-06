@@ -131,10 +131,25 @@ export default function ExamForm({ onSuccess, onCancel, initialData }: ExamFormP
 
   const handleDiopterBlur = (e: React.FocusEvent<HTMLInputElement>, field: keyof ExamData) => {
     if(!isEditing) return;
-    const val = parseFloat(e.target.value);
+    
+    const textVal = e.target.value;
+    
+    // 1. Si está vacío o es solo un guión suelto, lo limpiamos
+    if (textVal.trim() === "" || textVal === "-" || textVal === "+") {
+       setFormData(prev => ({ ...prev, [field]: "" }));
+       return;
+    }
+
+    // Intentamos convertir a número
+    const val = parseFloat(textVal);
+    
     if (!isNaN(val)) {
+        // 2. Si es un número válido, lo redondeamos a saltos de 0.25
         const rounded = (Math.round(val * 4) / 4).toFixed(2);
         setFormData(prev => ({ ...prev, [field]: rounded }));
+    } else {
+        // 3. ¡EL EXTERMINADOR! Si el teclado metió una letra, la borramos sin piedad
+        setFormData(prev => ({ ...prev, [field]: "" }));
     }
   };
 
