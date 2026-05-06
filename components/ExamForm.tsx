@@ -138,6 +138,23 @@ export default function ExamForm({ onSuccess, onCancel, initialData }: ExamFormP
     }
   };
 
+  const handleDiopterKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, field: keyof ExamData) => {
+    if (!isEditing) return;
+    
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      // Tomamos el valor actual o 0 si está vacío
+      const current = parseFloat(e.currentTarget.value) || 0;
+      // Si es arriba sumamos, si es abajo restamos
+      const direction = e.key === 'ArrowUp' ? 1 : -1;
+      const nextVal = current + (0.25 * direction);
+      
+      // Aseguramos el formato de .25 y 2 decimales
+      const rounded = (Math.round(nextVal * 4) / 4).toFixed(2);
+      setFormData(prev => ({ ...prev, [field]: rounded }));
+    }
+  };
+  
   const handleInt = (e: React.ChangeEvent<HTMLInputElement>, field: keyof ExamData) => {
     if(!isEditing) return;
     const val = e.target.value;
@@ -217,9 +234,9 @@ export default function ExamForm({ onSuccess, onCancel, initialData }: ExamFormP
   const handlePrint = () => window.print();
 
   const DiopterInput = ({ value, field, placeholder }: any) => (
-    <input disabled={!isEditing} type="number" step="0.25" className="w-full text-center p-1 font-bold outline-none bg-transparent" placeholder={placeholder} 
+    <input disabled={!isEditing} type="text" inputMode="decimal" className="w-full text-center p-1 font-bold outline-none bg-transparent" placeholder={placeholder} 
     value={value || ""} 
-    onChange={(e) => handleDiopterChange(e, field)} onBlur={(e) => handleDiopterBlur(e, field)} />
+    onChange={(e) => handleDiopterChange(e, field)} onBlur={(e) => handleDiopterBlur(e, field)} onKeyDown={(e) => handleDiopterKeyDown(e, field)} />
   );
   const AddInput = ({ value, field, placeholder }: any) => (
     <input disabled={!isEditing} type="number" step="0.25" min="0" max="3.00" className="w-full text-center p-1 font-bold outline-none bg-transparent" placeholder={placeholder}
