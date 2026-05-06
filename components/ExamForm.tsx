@@ -234,7 +234,7 @@ export default function ExamForm({ onSuccess, onCancel, initialData }: ExamFormP
   const handlePrint = () => window.print();
 
   const DiopterInput = ({ value, field, placeholder }: any) => (
-    <input disabled={!isEditing} type="text" inputMode="decimal" className="w-full text-center p-1 font-bold outline-none bg-transparent" placeholder={placeholder} 
+    <input disabled={!isEditing} type="text" className="w-full text-center p-1 font-bold outline-none bg-transparent" placeholder={placeholder} 
     value={value || ""} 
     onChange={(e) => handleDiopterChange(e, field)} onBlur={(e) => handleDiopterBlur(e, field)} onKeyDown={(e) => handleDiopterKeyDown(e, field)} />
   );
